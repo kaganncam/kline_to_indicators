@@ -18,15 +18,16 @@ class Indicator():
         close_prices = [float(self.get_kline_info(index)[3]) for index in range(-window,0)]
         open_prices = [float(self.get_kline_info(index)[0]) for index in range(-window,0)]
 
-        positive = [close  for close,open_ in zip(open_prices,close_prices) if close > open_]
-        negative = [close  for close,open_ in zip(open_prices,close_prices) if open_ > close]
+        positive = [close - open_  for close,open_ in zip(open_prices,close_prices) if close > open_]
+        negative = [abs(close - open_)  for close,open_ in zip(open_prices,close_prices) if open_ > close]
+
         if len(negative) == 0:
             rsi = 100
         else:
-            rs = sum(positive) / sum(negative) if sum(negative) != 0 else 0
-            rs = sum(positive)/ sum(negative)
-            rsi = 100 - ( 100 / 1+ rs )
+            rs = (sum(positive) / len(positive)) / (sum(negative) / len(negative) )if sum(negative) != 0 else 0
+            rsi = 100 - ( 100  / ( 1 + rs ))
         order = None
+
         if rsi <= 30:
             order = "buy"
         elif rsi >= 70:
@@ -34,5 +35,21 @@ class Indicator():
         return rsi , order
 
     def Sma(self,windows):
+        data = self.data[-windows:]
+        sma = sum([float(prices[4]) for prices in data])/windows
+
+        last_price = float(data[-1][4])
+        previous_price = float(data[-2][4])
+        order = None
+        
+        if last_price > sma and previous_price <= sma :
+            order = "buy" 
+
+        if last_price < sma and previous_price >= sma :
+            order = "sell"
+
+        return sma,order
+
+    def Ema(self,windows):
+        ##To be contunied 
         pass
-        ###to be continued
