@@ -1,5 +1,7 @@
- 
+import numpy
+
 class Indicator():
+
     def __init__(self,data):
         self.data = data 
     def get_kline_info(self,index):
@@ -11,7 +13,8 @@ class Indicator():
 
         return open_price ,high_price ,low_price ,close_price ,volume 
 
-    def rsi(self,window = 14):
+    def rsi(self, over_bought = 30,over_sold = 70,window = 14):
+        
         data = self.data[-window:]
         positive  = []
         negative = []
@@ -28,9 +31,9 @@ class Indicator():
             rsi = 100 - ( 100  / ( 1 + rs ))
         order = None
 
-        if rsi <= 30:
+        if rsi <= over_sold:
             order = "buy"
-        elif rsi >= 70:
+        elif rsi >= over_bought:
             order = "sell"
         return rsi , order
 
@@ -50,6 +53,15 @@ class Indicator():
 
         return sma,order
 
-    def Ema(self,windows):
-        ##To be contunied 
-        pass
+    def Bollinger(self,windows = 20,st_dev = 2):
+        order = None
+        data = self.data[-windows-20:]
+        sma = sum([float(prices[4]) for prices in data])/windows
+        last_20_sma  = []
+        [last_20_sma.append(sum([float(prices[4]) for prices in data[i - 20:i]])/windows) for i in range(20,40)]
+        middle = numpy.array(last_20_sma)
+        st_dev_array = numpy.std(middle) * st_dev
+        upper_band = middle + st_dev_array
+        lower_band = middle - st_dev_array
+
+        return sma,lower_band,upper_band,order
